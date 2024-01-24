@@ -27,16 +27,15 @@ Game::Game(HINSTANCE hInstance)
 		1280,				// Width of the window's client area
 		720,				// Height of the window's client area
 		false,				// Sync the framerate to the monitor refresh? (lock framerate)
-		true)				// Show extra stats (fps) in title bar?
+		true),				// Show extra stats (fps) in title bar?
+	ibView{},
+	vbView{}
 {
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
 	printf("Console window created successfully.  Feel free to printf() here.\n");
 #endif
-
-	ibView = {};
-	vbView = {};
 }
 
 // --------------------------------------------------------
@@ -46,13 +45,6 @@ Game::Game(HINSTANCE hInstance)
 // --------------------------------------------------------
 Game::~Game()
 {
-	// Call delete or delete[] on any objects or arrays you've
-	// created using new or new[] within this class
-	// - Note: this is unnecessary if using smart pointers
-
-	// Call Release() on any Direct3D objects made within this class
-	// - Note: this is unnecessary for D3D objects stored in ComPtrs
-
 	// We need to wait here until the GPU
 	// is actually done with its work
 	DX12Helper::GetInstance().WaitForGPU();
@@ -152,8 +144,9 @@ void Game::CreateRootSigAndPipelineState()
 
 		// Set up the first element - a position, which is 3 float values
 		inputElements[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-		inputElements[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 		inputElements[0].SemanticName = "POSITION";
+		inputElements[0].SemanticIndex = 0;
 
 		// Set up the second element - a color, which is 4 more float values
 		inputElements[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
@@ -346,8 +339,8 @@ void Game::Draw(float deltaTime, float totalTime)
 				vsyncNecessary ? 0 : DXGI_PRESENT_ALLOW_TEARING);
 
 		// Figure out which buffer is next
-			currentSwapBuffer++;
-			if (currentSwapBuffer >= numBackBuffers)
+		currentSwapBuffer++;
+		if (currentSwapBuffer >= numBackBuffers)
 				currentSwapBuffer = 0;
 	}
 }

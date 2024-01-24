@@ -103,7 +103,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DX12Helper::CreateStaticBuffer(
     desc.MipLevels = 1;
     desc.SampleDesc.Count = 1;
     desc.SampleDesc.Quality = 0;
-    desc.Width = dataStride * dataCount; // Size of the buffer
+    desc.Width = (UINT64)dataStride * (UINT64)dataCount; // Size of the buffer
 
     device->CreateCommittedResource(
         &props,

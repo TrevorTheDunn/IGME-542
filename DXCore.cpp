@@ -55,11 +55,12 @@ DXCore::DXCore(
 	startTime(0),
 	totalTime(0),
 	hWnd(0),
-	dxFeatureLevel(D3D_FEATURE_LEVEL_12_0),
+	dxFeatureLevel(D3D_FEATURE_LEVEL_12_0), //DX12 stuff starts here
 	currentSwapBuffer(0),
 	rtvDescriptorSize(0),
-	dsvHandle({}),
-	scissorRect({})
+	dsvHandle{},
+	scissorRect{},
+	rtvHandles{}
 {
 	// Save a static reference to this object.
 	//  - Since the OS-level message function must be a non-member (global) function, 
@@ -71,8 +72,6 @@ DXCore::DXCore(
 	__int64 perfFreq = 0;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&perfFreq);
 	perfCounterSeconds = 1.0 / (double)perfFreq;
-
-	*rtvHandles = {};
 }
 
 // --------------------------------------------------------
@@ -195,6 +194,7 @@ HRESULT DXCore::InitDirect3D()
 			0,										// Not explicitly specifying which adapter (GPU)
 			D3D_FEATURE_LEVEL_11_0,					// MINIMUM feature level - NOT the level we'll turn on
 			IID_PPV_ARGS(device.GetAddressOf()));	// Macro to grab necessary IDs of device
+		if (FAILED(hr)) return hr;
 
 		// Now that we have a device, determine the maximum feature level supported by the device
 		D3D_FEATURE_LEVEL levelsToCheck[] = {
@@ -327,7 +327,7 @@ HRESULT DXCore::InitDirect3D()
 		// for this buffer (which optimizes the clearing of the buffer)
 		D3D12_CLEAR_VALUE clear = {};
 		clear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		clear.DepthStencil.Depth = 1.0;
+		clear.DepthStencil.Depth = 1.0f;
 		clear.DepthStencil.Stencil = 0;
 
 		// Describe the memory heap that will house this resource
@@ -424,7 +424,7 @@ void DXCore::OnResize()
 
 		// Make a handle for it
 		rtvHandles[i] = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-		rtvHandles[i].ptr += rtvDescriptorSize * i;
+		rtvHandles[i].ptr += rtvDescriptorSize * (size_t)i;
 
 		// Create the render target view
 		device->CreateRenderTargetView(backBuffers[i].Get(), 0, rtvHandles[i]);
