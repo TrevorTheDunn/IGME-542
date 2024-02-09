@@ -3,6 +3,11 @@
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
+#include <memory>
+#include <vector>
+
+#include "Camera.h"
+#include "GameEntity.h"
 
 class Game 
 	: public DXCore
@@ -38,5 +43,8 @@ private:
 
 	D3D12_VERTEX_BUFFER_VIEW vbView;
 	D3D12_INDEX_BUFFER_VIEW ibView;
+
+	std::shared_ptr<Camera> camera;
+	std::vector<std::shared_ptr<GameEntity>> entityList;
 };
 
