@@ -1,6 +1,7 @@
 cbuffer ExternalData: register(b0)
 {
 	matrix world;
+	matrix wit;	//World Inverse Transpose
 	matrix view;
 	matrix proj;
 }
@@ -18,8 +19,8 @@ struct VertexShaderInput
 	//  |    |                |
 	//  v    v                v
 	float3 localPosition	: POSITION;     // XYZ position
-	float2 uv				: TEXCOORD;   
-	float3 normal			: NORMAL;
+	float3 normal			: NORMAL;   
+	float2 uv				: TEXCOORD;
 	float3 tangent			: TANGENT;
 };
 
@@ -36,7 +37,10 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 screenPosition	: SV_POSITION;	// XYZW position (System Value Position)
-	float4 color			: COLOR;        // RGBA color
+	float3 normal			: NORMAL;
+	float2 uv				: TEXCOORD;
+	float3 tangent			: TANGENT;
+	float3 worldPos			: POSITION;
 };
 
 // --------------------------------------------------------
@@ -54,7 +58,12 @@ VertexToPixel main( VertexShaderInput input )
 	matrix wvp = mul(proj, mul(view, world));
 	output.screenPosition = mul(wvp, float4(input.localPosition, 1.0f));
 
-	output.color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	output.normal = normalize(mul((float3x3)wit, input.normal));
+	output.tangent = normalize(mul((float3x3)world, input.tangent));
+
+	output.worldPos = mul(world, float4(input.localPosition, 1.0f)).xyz;
+
+	output.uv = input.uv;
 
 	return output;
 }
